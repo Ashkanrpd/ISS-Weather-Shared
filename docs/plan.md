@@ -3,7 +3,7 @@
 **With this API we will find the ISS current location, how far are we from it, how much is our temperature difference and what are the weather detail for the region that is located at below of the ISS on earth.**
 
 **URL**  
-<calc?latitude=’’&&longitude=’’>
+[/calc?latitude=’’&&longitude=’’]()
 
 **Method:**  
 Get
