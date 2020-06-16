@@ -54,8 +54,8 @@ describe("ISS", () => {
     });
   });
 
-  it("ISS -  User requested a resource which does not exist!", async () => {
-    nock("http://api.weatherstack.com/current")
+  it("ISS -  No location found for coordinates", async () => {
+    nock("http://api.weatherstack.com")
       .get("/current")
       .query({
         access_key: process.env.WEATHER_STACK_ACCESS_KEY,
@@ -70,25 +70,20 @@ describe("ISS", () => {
           info: "User requested a resource which does not exist.",
         },
       });
-    const response = await request("http://api.weatherstack.com/current")
-      .get("/current")
-      .query({
-        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
-        latitude: 8787979798799879879879879,
-        longitude: 8787979798799879879879879,
-      });
+    const response = await request(app).get("/calc").query({
+      access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+      latitude: 8787979798799879879879879,
+      longitude: 8787979798799879879879879,
+    });
     expect(response.header).to.include({
       "content-type": "application/json; Charset=UTF-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      code: 404,
       success: false,
-      error: {
-        code: 404,
-        type: "404_not_found",
-        info: "User requested a resource which does not exist.",
-      },
+      message: "No location found for coordinates!",
     });
   });
 
@@ -108,35 +103,28 @@ describe("ISS", () => {
           info: "The API request did not return any results.",
         },
       });
-    const response = await request("http://api.weatherstack.com")
-      .get("/current")
-      .query({
-        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
-        latitude: 8787979798799879879879879,
-        longitude: 8787979798799879879879879,
-      });
+    const response = await request(app).get("/calc").query({
+      access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+      latitude: 8787979798799879879879879,
+      longitude: 8787979798799879879879879,
+    });
     expect(response.header).to.include({
       "content-type": "application/json; Charset=UTF-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      code: 404,
       success: false,
-      error: {
-        code: 602,
-        type: "no_results",
-        info: "The API request did not return any results.",
-      },
+      message: "No weather found for location!",
     });
   });
 
   it("ISS - ISS info not found!", async () => {
-    const result = await nock("http://api.open-notify.org")
+    nock("http://api.open-notify.org")
       .get("/iss-now.json")
       .replyWithError({ code: "ETIMEDOUT" });
-    const response = await request("http://api.open-notify.org").get(
-      "/iss-now.json"
-    );
+    const response = await request(app).get("/calc");
     expect(response.header).to.include({
       "content-type": "application/json",
     });
