@@ -1,3 +1,4 @@
+require("dotenv").config({ path: "./.env" });
 const nock = require("nock");
 const request = require("supertest");
 const chai = require("chai");
@@ -53,69 +54,89 @@ describe("ISS", () => {
     });
   });
 
-  it("ISS -  No location found for coordinates!", async () => {
-    nock("http://www.example.com")
-      .get("/calc")
-      .query({ latitude: 120.506347, longitude: -200.583521 })
-      .reply(200, {
-        code: 404,
+  it("ISS -  User requested a resource which does not exist!", async () => {
+    nock("http://api.weatherstack.com/current")
+      .get("/current")
+      .query({
+        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+        latitude: 8787979798799879879879879,
+        longitude: 8787979798799879879879879,
+      })
+      .reply(404, {
         success: false,
-        message: "No location found for coordinates!",
+        error: {
+          code: 404,
+          type: "404_not_found",
+          info: "User requested a resource which does not exist.",
+        },
       });
-    const response = await request("http://www.example.com")
-      .get("/calc")
-      // we are going to give wrong coordinates to get an error
-      .query({ latitude: 120.506347, longitude: -200.583521 });
+    const response = await request("http://api.weatherstack.com/current")
+      .get("/current")
+      .query({
+        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+        latitude: 8787979798799879879879879,
+        longitude: 8787979798799879879879879,
+      });
     expect(response.header).to.include({
-      "content-type": "application/json",
+      "content-type": "application/json; Charset=UTF-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
-      code: 404,
       success: false,
-      message: "No location found for coordinates!",
+      error: {
+        code: 404,
+        type: "404_not_found",
+        info: "User requested a resource which does not exist.",
+      },
     });
   });
 
-  it("ISS - No weather found for location!", async () => {
-    nock("http://www.example1.com")
-      .get("/calc")
-      .query({ latitude: 45.506347, longitude: -73.583521 })
-      .reply(200, {
-        code: 404,
+  it("ISS - The API request did not return any results.!", async () => {
+    nock("http://api.weatherstack.com")
+      .get("/current")
+      .query({
+        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+        latitude: 8787979798799879879879879,
+        longitude: 8787979798799879879879879,
+      })
+      .reply(602, {
         success: false,
-        message: "No weather found for location!",
+        error: {
+          code: 602,
+          type: "no_results",
+          info: "The API request did not return any results.",
+        },
       });
-    const response = await request("http://www.example1.com")
-      .get("/calc")
-      // we assume we couldnt get data from our API
-      .query({ latitude: 45.506347, longitude: -73.583521 });
+    const response = await request("http://api.weatherstack.com")
+      .get("/current")
+      .query({
+        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
+        latitude: 8787979798799879879879879,
+        longitude: 8787979798799879879879879,
+      });
     expect(response.header).to.include({
-      "content-type": "application/json",
+      "content-type": "application/json; Charset=UTF-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
-      code: 404,
       success: false,
-      message: "No weather found for location!",
+      error: {
+        code: 602,
+        type: "no_results",
+        info: "The API request did not return any results.",
+      },
     });
   });
 
   it("ISS - ISS info not found!", async () => {
-    nock("http://www.example.com")
-      .get("/calc")
-      .query({ latitude: 45.506347, longitude: -73.583521 })
-      .reply(200, {
-        code: 502,
-        success: false,
-        message: "ISS info not found!",
-      });
-    const response = await request("http://www.example.com")
-      .get("/calc")
-      // we assume that the ISS API is not responding
-      .query({ latitude: 45.506347, longitude: -73.583521 });
+    const result = await nock("http://api.open-notify.org")
+      .get("/iss-now.json")
+      .replyWithError({ code: "ETIMEDOUT" });
+    const response = await request("http://api.open-notify.org").get(
+      "/iss-now.json"
+    );
     expect(response.header).to.include({
       "content-type": "application/json",
     });

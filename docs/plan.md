@@ -16,7 +16,7 @@ longitude=’’
 
 ```
 {
-  "Code":200
+  "code":200
   "success": true
   "content": {
       "distance": “1000km”,
@@ -42,27 +42,17 @@ longitude=’’
 
 ```
 {
-  "Code": 400
+  "code": 400
   "success": false
-  "message": "Bad Request!”
+  "message": "Bad Request!"
 }
 ```
 
 ```
 {
-  "Code": 404
+  "code": 404
   "success": false
-  "message": "No location found for coordinates!”
-}
-```
-
----
-
-```
-{
-  "Code": 404
-  "success": false
-  "message": “No weather found for location!”
+  "message": "No location found for coordinates!"
 }
 ```
 
@@ -70,9 +60,19 @@ longitude=’’
 
 ```
 {
-  "Code": 502
+  "code": 404
   "success": false
-  "message": “ISS info not found!”
+  "message": "No weather found for location!"
+}
+```
+
+---
+
+```
+{
+  "code": 502
+  "success": false
+  "message": "ISS info not found!"
 }
 ```
 
