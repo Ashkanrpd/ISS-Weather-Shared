@@ -42,9 +42,17 @@ longitude=’’
 
 ```
 {
+  "Code": 400
+  "success": false
+  "message": "Bad Request!”
+}
+```
+
+```
+{
   "Code": 404
   "success": false
-  "message": “Unable to find the user location”
+  "message": "No location found for coordinates!”
 }
 ```
 
@@ -54,7 +62,7 @@ longitude=’’
 {
   "Code": 404
   "success": false
-  "message": “Unable to find the ISS location”
+  "message": “No weather found for location!”
 }
 ```
 
@@ -62,49 +70,9 @@ longitude=’’
 
 ```
 {
-  "Code": 404
+  "Code": 502
   "success": false
-  "message": “Unable to calculate the distance”
-}
-```
-
----
-
-```
-{
-  "Code": 404
-  "success": false
-  "message": “Unable to find the temperature for user location”
-}
-```
-
----
-
-```
-{
-  "Code": 404
-  "success": false
-  "message": “Unable to find the temperature for ISS location”
-}
-```
-
----
-
-```
-{
-  "Code": 404
-  "success": false
-  "message": “Unable to find the location below the ISS on earth”
-}
-```
-
----
-
-```
-{
-  "Code": 404
-  "success": false
-  "message": “Unable to find the weather detail for the location below the ISS on earth”
+  "message": “ISS info not found!”
 }
 ```
 
