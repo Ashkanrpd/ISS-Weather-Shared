@@ -1,4 +1,3 @@
-require("dotenv").config({ path: "./.env" });
 const nock = require("nock");
 const request = require("supertest");
 const chai = require("chai");
@@ -11,15 +10,17 @@ describe("ISS", () => {
   beforeEach(async () => await start());
   afterEach(() => close());
 
-  it("ISS - Got the coords successfully", async () => {
+  it("ISS - Responded successfully", async () => {
     const response = await request(app)
       .get("/calc")
-      .query({ latitude: 45.506347, longitude: -73.583521 });
+      .query({ latitude: 45.506347 })
+      .query({ longitude: -73.583521 });
     expect(response.header).to.include({
       "content-type": "text/html; charset=utf-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
+    console.log("body", body);
     expect(body).to.include({ code: 200, success: true });
     expect(body.content).to.have.all.keys("distance", "tempDif", "location");
     expect(body.content.location).to.have.all.keys(
@@ -36,12 +37,10 @@ describe("ISS", () => {
       "icon"
     );
   });
-
+  // ---------------------------------------------------------------------------
   it("ISS - Missing Params", async () => {
     const response = await request(app).get("/calc");
-
     // here we are missing params
-
     expect(response.header).to.include({
       "content-type": "text/html; charset=utf-8",
     });
@@ -53,12 +52,11 @@ describe("ISS", () => {
       message: "Bad Request!",
     });
   });
-
+  // ---------------------------------------------------------------------------
   it("ISS -  No location found for coordinates", async () => {
     nock("http://api.weatherstack.com")
       .get("/current")
       .query({
-        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
         latitude: 8787979798799879879879879,
         longitude: 8787979798799879879879879,
       })
@@ -71,7 +69,6 @@ describe("ISS", () => {
         },
       });
     const response = await request(app).get("/calc").query({
-      access_key: process.env.WEATHER_STACK_ACCESS_KEY,
       latitude: 8787979798799879879879879,
       longitude: 8787979798799879879879879,
     });
@@ -86,25 +83,23 @@ describe("ISS", () => {
       message: "No location found for coordinates!",
     });
   });
-
+  // // ---------------------------------------------------------------------------
   it("ISS - The API request did not return any results.!", async () => {
     nock("http://api.weatherstack.com")
       .get("/current")
       .query({
-        access_key: process.env.WEATHER_STACK_ACCESS_KEY,
         latitude: 8787979798799879879879879,
         longitude: 8787979798799879879879879,
       })
       .reply(602, {
         success: false,
         error: {
-          code: 602,
+          code: 404,
           type: "no_results",
           info: "The API request did not return any results.",
         },
       });
     const response = await request(app).get("/calc").query({
-      access_key: process.env.WEATHER_STACK_ACCESS_KEY,
       latitude: 8787979798799879879879879,
       longitude: 8787979798799879879879879,
     });
@@ -119,14 +114,14 @@ describe("ISS", () => {
       message: "No weather found for location!",
     });
   });
-
+  // ---------------------------------------------------------------------------
   it("ISS - ISS info not found!", async () => {
     nock("http://api.open-notify.org")
       .get("/iss-now.json")
       .replyWithError({ code: "ETIMEDOUT" });
     const response = await request(app).get("/calc");
     expect(response.header).to.include({
-      "content-type": "application/json",
+      "content-type": "text/html; charset=utf-8",
     });
     let body = await response.text;
     body = JSON.parse(body);
