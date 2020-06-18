@@ -47,12 +47,27 @@ app.get("/calc", async (req, res) => {
       })
     );
   }
+  if (
+    userLatitude > 90 ||
+    userLatitude < -90 ||
+    userLongitude > 180 ||
+    userLongitude < -180
+  ) {
+    return res.send(
+      JSON.stringify({
+        code: 404,
+        success: false,
+        message: "No location found for coordinates!",
+      })
+    );
+  }
 
   try {
     let issResponse = await fetch("http://api.open-notify.org/iss-now.json");
-    let issbody = await issResponse.text();
-    issbody = JSON.parse(issbody);
-    if (issbody.message !== "success") {
+    let issBody = await issResponse.text();
+    issBody = JSON.parse(issBody);
+    console.log("issBody", issBody);
+    if (issBody.message !== "success") {
       return res.send(
         JSON.stringify({
           code: 502,
@@ -65,22 +80,14 @@ app.get("/calc", async (req, res) => {
     const distance = distanceCalc(
       userLatitude,
       userLongitude,
-      issbody.iss_position.latitude,
-      issbody.iss_position.longitude,
+      issBody.iss_position.latitude,
+      issBody.iss_position.longitude,
       "K"
     );
-    if (!distance) {
-      return res.send(
-        JSON.stringify({
-          code: 404,
-          success: false,
-          message: "No location found for coordinates!",
-        })
-      );
-    }
+
     // Finding the weather detials for the region below the ISS
     let wsForIssResponse = await fetch(
-      `http://api.weatherstack.com/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${issbody.iss_position.latitude},${issbody.iss_position.longitude}`
+      `http://api.weatherstack.com/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${issBody.iss_position.latitude},${issBody.iss_position.longitude}`
     );
     let wsForIssBody = await wsForIssResponse.text();
     wsForIssBody = JSON.parse(wsForIssBody);
@@ -92,11 +99,16 @@ app.get("/calc", async (req, res) => {
 
     let wsForUserBody = await wsForUserResponse.text();
     wsForUserBody = JSON.parse(wsForUserBody);
+    console.log("wsForUserBody", wsForUserBody);
+    console.log("wsForIssBody", wsForIssBody);
 
     if (
+      "success" in wsForIssBody ||
+      "success" in wsForUserBody ||
       isNaN(wsForIssBody.current.temperature) ||
       isNaN(wsForUserBody.current.temperature) ||
-      !wsForIssBody.location.name
+      !wsForIssBody.location.name ||
+      !wsForUserBody.location.name
     ) {
       return res.send(
         JSON.stringify({
@@ -110,30 +122,31 @@ app.get("/calc", async (req, res) => {
     // Calculating the temperature difference between the international space station and user
     const tempDif =
       wsForIssBody.current.temperature - wsForUserBody.current.temperature;
-
-    res.send(
-      JSON.stringify({
-        code: 200,
-        success: true,
-        content: {
-          distance: distance + "KM",
-          tempDif: tempDif + "C",
-          location: {
-            observationTime: wsForIssBody.current.observation_time,
-            name: wsForIssBody.location.name,
-            country: wsForIssBody.location.country,
-            temperature: wsForIssBody.current.temperature,
-            weatherDescription: wsForIssBody.current.weatherDescription,
-            windspeed: wsForIssBody.current.windspeed,
-            humidity: wsForIssBody.current.humidity,
-            feelsLike: wsForIssBody.current.feelsLike,
-            visibility: wsForIssBody.current.visibility,
-            uvIndex: wsForIssBody.current.uvIndex,
-            icon: wsForIssBody.current.icon,
+    if (tempDif) {
+      return res.send(
+        JSON.stringify({
+          code: 200,
+          success: true,
+          content: {
+            distance: distance + "KM",
+            tempDif: tempDif + "C",
+            location: {
+              observationTime: wsForIssBody.current.observation_time,
+              name: wsForIssBody.location.name,
+              country: wsForIssBody.location.country,
+              temperature: wsForIssBody.current.temperature,
+              weatherDescription: wsForIssBody.current.weatherDescription,
+              windspeed: wsForIssBody.current.windspeed,
+              humidity: wsForIssBody.current.humidity,
+              feelsLike: wsForIssBody.current.feelsLike,
+              visibility: wsForIssBody.current.visibility,
+              uvIndex: wsForIssBody.current.uvIndex,
+              icon: wsForIssBody.current.icon,
+            },
           },
-        },
-      })
-    );
+        })
+      );
+    }
   } catch (err) {
     throw new Error(err);
   }
