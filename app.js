@@ -63,7 +63,7 @@ app.get("/calc", async (req, res) => {
   }
 
   try {
-    let issResponse = await fetch("http://api.open-notify.org/iss-now.json");
+    let issResponse = await fetch(process.env.OPEN_NOTIFY_URL_JSON);
     let issBody = await issResponse.text();
     issBody = JSON.parse(issBody);
     console.log("issBody", issBody);
@@ -87,14 +87,14 @@ app.get("/calc", async (req, res) => {
 
     // Finding the weather detials for the region below the ISS
     let wsForIssResponse = await fetch(
-      `http://api.weatherstack.com/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${issBody.iss_position.latitude},${issBody.iss_position.longitude}`
+      `${process.env.WEATHER_STACK_URL}/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${issBody.iss_position.latitude},${issBody.iss_position.longitude}`
     );
     let wsForIssBody = await wsForIssResponse.text();
     wsForIssBody = JSON.parse(wsForIssBody);
 
     // Finding the weather details for the user location
     let wsForUserResponse = await fetch(
-      `http://api.weatherstack.com/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${userLatitude},${userLongitude}`
+      `${process.env.WEATHER_STACK_URL}/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=${userLatitude},${userLongitude}`
     );
 
     let wsForUserBody = await wsForUserResponse.text();

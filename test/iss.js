@@ -15,13 +15,13 @@ describe("ISS", () => {
   afterEach(() => close());
 
   it("ISS - Responded successfully", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
       .reply(200, {
         message: "success",
         iss_position: { latitude: 7.065, longitude: -73.09 },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=7.065,-73.09`
       )
@@ -44,7 +44,7 @@ describe("ISS", () => {
           visibility: 10,
         },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=45.506347,-73.583521`
       )
@@ -95,7 +95,7 @@ describe("ISS", () => {
   });
   // ---------------------------------------------------------------------------
   it("ISS -  No location found for coordinates", async () => {
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get("/current")
       .query({
         latitude: 8787979798799879879879879,
@@ -127,20 +127,20 @@ describe("ISS", () => {
   // ---------------------------------------------------------------------------
 
   it("ISS - The API request did not return any results.!", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
       .reply(200, {
         message: "success",
         iss_position: { latitude: 33.4605, longitude: -172.2826 },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=33.4605,-172.2826`
       )
       .reply(404, {
         success: false,
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=-52.820349,-9.206984`
       )
@@ -164,7 +164,7 @@ describe("ISS", () => {
   });
   // ---------------------------------------------------------------------------
   it("ISS - ISS info not found!", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
       .reply(502, { message: "fail" });
 
