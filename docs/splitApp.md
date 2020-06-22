@@ -2,8 +2,9 @@
 
 **First, i will make a backend folder and i will put everything related to backend inside of this folder. Then i will start spliting the app.js file. These are the sections that will be moved from app.js to different files:**
 
-- **ISS data collector**  
-  Iss data collector can be a function who doesnt need any arguments and in return it sends the ISS coordinates.  
+- **First step: Separating the ISS data collector function**  
+  Iss data collector can be a function who doesnt need any arguments and in return it sends back the ISS coordinates. I will declare 7 global variables (issLatitude, issLongitude, userLastitude, userLongitude, issWeather, userWeather and tempDif) with undefined values and then i will make a new file js file, then will move the function inside of it, then will export/import it in my /calc endpoint.(upadte the iss global variables values which we declared earlier). Finally, i will run the tests and if everything went well i go for 2nd step.
+
   **File name:**  
   issDataCollector.js
 
@@ -29,8 +30,9 @@ module.exports = issCollector
 
 ---
 
-- **distanceCalc Function**  
-  This function needs the user and iss coordinates so i will pass them as arguments and in return i will get the distance.  
+- **Second step: Separating the distanceCalc Function**  
+  When user makes a request to our /calc endpoint we will get its coordinates and will update the user global variables. Our distanceCalc function needs the user and iss coordinates and at this point we should have all 4 coordinates. I will make another js file then will move this function inside of it, export/import it to mycalc endpoint and will call it with our 4 coordinates. This will send back the distance between the user ans iss. Finally, i will run the tests and if everything went well i go for next step.
+
   **File name:**  
   distanceCalc.js
 
@@ -67,8 +69,9 @@ module.exports = distanceCalc
 
 ---
 
-- **weather stack collector**  
-  This function will need 4 coordinates to return the weather detail for iss and user location.  
+- **Final step: Separating weather stack collector function**  
+  This function will need 4 coordinates to return the weather detail for iss and user location, also i would like it to cacluate the difference between user and iss temperature. I will make a js file move this part of code to that, export/import it to calc endpoint and by calling it i should be able to update my issWeather and userWeather and tempDif variables and send all the required data to the user.
+
   **File name:**  
   weatherStack.js
 
@@ -108,7 +111,11 @@ const weatherStack = function (userLatitude,userLongitude,issBody.iss_position.l
        })
      );
    }
-   else return {wsForIssBody,wsForUserBody }
+   else {
+           // Calculating the temperature difference between the international space station and user
+    const tempDif =
+      wsForIssBody.current.temperature - wsForUserBody.current.temperature;
+      return {wsForIssBody,wsForUserBody, tempDif }
 }
 
 module.exports = weatherStack
