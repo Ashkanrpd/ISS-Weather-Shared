@@ -4,9 +4,9 @@ const request = require("supertest");
 const chai = require("chai");
 const expect = chai.expect;
 const fetch = require("node-fetch");
-const app = require("../app.js").app;
-const start = require("../app.js").start;
-const close = require("../app.js").close;
+const app = require("../backend/app.js").app;
+const start = require("../backend/app.js").start;
+const close = require("../backend/app.js").close;
 
 describe("ISS", () => {
   beforeEach(async () => {
