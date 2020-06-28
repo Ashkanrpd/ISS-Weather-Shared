@@ -5,27 +5,32 @@ const app = express();
 const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
+const customError = require("../utils/error.js");
 const port = process.env.PORT;
 
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
+
+function handleError(err, req, res) {
+  if (err instanceof customError) {
+    console.log("js", err);
+    res.status(err.code).send(JSON.stringify(err));
+    return;
+  }
+  res.status(500).send(JSON.stringify(err));
+}
 
 // Here we start our endpoints
 app.get("/calc", async (req, res) => {
   try {
     let userLatitude = req.query.latitude;
     let userLongitude = req.query.longitude;
-    let issWeather;
-    let userWeather;
-    let issBody;
-    let issLatitude;
-    let issLongitude;
     validateParameters({ userLatitude, userLongitude, res });
     // Finding the ISS coordinates
-    issBody = await issCollector();
+    const issBody = await issCollector();
     validateIssBody({ issBody, res });
-    issLatitude = issBody.iss_position.latitude;
-    issLongitude = issBody.iss_position.longitude;
+    const issLatitude = issBody.iss_position.latitude;
+    const issLongitude = issBody.iss_position.longitude;
     // Finding the distance between the user and nearest place to ISS on earth
     const distance = await distanceCalc(
       userLatitude,
@@ -42,14 +47,14 @@ app.get("/calc", async (req, res) => {
       issLongitude
     );
     validateWeatherStack({ response, res });
-    issWeather = response.wsForIssBody;
-    userWeather = response.wsForUserBody;
+    const issWeather = response.wsForIssBody;
+    const userWeather = response.wsForUserBody;
     // Calculating the temperature difference between the international space station and user
     const tempDif =
       issWeather.current.temperature - userWeather.current.temperature;
     validateTempDif({ tempDif, res, distance, issWeather });
   } catch (err) {
-    throw new Error(err);
+    handleError(err, req, res);
   }
 });
 // Here we are done with endpoint
@@ -58,11 +63,12 @@ app.get("/calc", async (req, res) => {
 const validateParameters = (params) => {
   const { userLatitude, userLongitude, res } = params;
   if (!userLatitude || !userLongitude) {
-    return res.send(
+    throw new customError(
       JSON.stringify({
+        name: "BadRequestError",
         code: 400,
         success: false,
-        message: "Bad Request!",
+        msg: "Bad Request!",
       })
     );
   }
@@ -72,29 +78,29 @@ const validateParameters = (params) => {
     userLongitude > 180 ||
     userLongitude < -180
   ) {
-    return res.send(
+    throw new customError(
       JSON.stringify({
+        name: "NotFoundError",
         code: 404,
         success: false,
-        message: "No location found for coordinates!",
+        msg: "No location found for coordinates!",
       })
     );
   }
-  return;
 };
 
 const validateIssBody = (params) => {
   const { issBody, res } = params;
-  if (issBody.message !== "success") {
-    return res.send(
+  if (issBody.msg !== "success") {
+    throw new customError(
       JSON.stringify({
+        name: "NotFoundError",
         code: 502,
         success: false,
-        message: "ISS info not found!",
+        msg: "ISS info not found!",
       })
     );
   }
-  return;
 };
 
 const validateWeatherStack = (params) => {
@@ -107,15 +113,15 @@ const validateWeatherStack = (params) => {
     !response.wsForIssBody.location.name ||
     !response.wsForUserBody.location.name
   ) {
-    return res.send(
+    throw new customError(
       JSON.stringify({
+        name: "NotFoundError",
         code: 404,
         success: false,
-        message: "No weather found for location!",
+        msg: "No weather found for location!",
       })
     );
   }
-  return;
 };
 
 const validateTempDif = (params) => {
@@ -145,7 +151,6 @@ const validateTempDif = (params) => {
       })
     );
   }
-  return;
 };
 // Here we are done with our validators and responses
 
