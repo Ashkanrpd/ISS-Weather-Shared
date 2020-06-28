@@ -4,9 +4,9 @@ const request = require("supertest");
 const chai = require("chai");
 const expect = chai.expect;
 const fetch = require("node-fetch");
-const app = require("../app.js").app;
-const start = require("../app.js").start;
-const close = require("../app.js").close;
+const app = require("../backend/app.js").app;
+const start = require("../backend/app.js").start;
+const close = require("../backend/app.js").close;
 
 describe("ISS", () => {
   beforeEach(async () => {
@@ -15,13 +15,13 @@ describe("ISS", () => {
   afterEach(() => close());
 
   it("ISS - Responded successfully", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
       .reply(200, {
-        message: "success",
+        msg: "success",
         iss_position: { latitude: 7.065, longitude: -73.09 },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=7.065,-73.09`
       )
@@ -44,7 +44,7 @@ describe("ISS", () => {
           visibility: 10,
         },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=45.506347,-73.583521`
       )
@@ -88,14 +88,15 @@ describe("ISS", () => {
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      name: "BadRequestError",
       code: 400,
       success: false,
-      message: "Bad Request!",
+      msg: "Bad Request!",
     });
   });
   // ---------------------------------------------------------------------------
   it("ISS -  No location found for coordinates", async () => {
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get("/current")
       .query({
         latitude: 8787979798799879879879879,
@@ -119,28 +120,29 @@ describe("ISS", () => {
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      name: "NotFoundError",
       code: 404,
       success: false,
-      message: "No location found for coordinates!",
+      msg: "No location found for coordinates!",
     });
   });
   // ---------------------------------------------------------------------------
 
   it("ISS - The API request did not return any results.!", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
       .reply(200, {
-        message: "success",
+        msg: "success",
         iss_position: { latitude: 33.4605, longitude: -172.2826 },
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=33.4605,-172.2826`
       )
       .reply(404, {
         success: false,
       });
-    nock("http://api.weatherstack.com")
+    nock(process.env.WEATHER_STACK_URL)
       .get(
         `/current?access_key=${process.env.WEATHER_STACK_ACCESS_KEY}&query=-52.820349,-9.206984`
       )
@@ -157,16 +159,17 @@ describe("ISS", () => {
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      name: "NotFoundError",
       code: 404,
       success: false,
-      message: "No weather found for location!",
+      msg: "No weather found for location!",
     });
   });
   // ---------------------------------------------------------------------------
   it("ISS - ISS info not found!", async () => {
-    nock("http://api.open-notify.org")
+    nock(process.env.OPEN_NOTIFY_URL)
       .get("/iss-now.json")
-      .reply(502, { message: "fail" });
+      .reply(502, { msg: "fail" });
 
     const response = await request(app)
       .get("/calc")
@@ -178,9 +181,10 @@ describe("ISS", () => {
     let body = await response.text;
     body = JSON.parse(body);
     expect(body).to.deep.equal({
+      name: "NotFoundError",
       code: 502,
       success: false,
-      message: "ISS info not found!",
+      msg: "ISS info not found!",
     });
   });
 });
