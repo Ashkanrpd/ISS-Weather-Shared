@@ -1,5 +1,4 @@
 require("dotenv").config();
-const fetch = require("node-fetch");
 const express = require("express");
 const app = express();
 const issCollector = require("./functions/issDataCollector.js");
@@ -14,7 +13,7 @@ app.use("/", express.static("./public")); // Needed for local assets
 
 function handleError(err, req, res, next) {
   if (err instanceof customError) {
-    res.status(err.code).send(JSON.stringify(err));
+    return res.status(err.code).send(JSON.stringify(err));
   }
   res.status(500).send(JSON.stringify(err));
 }
@@ -57,6 +56,7 @@ app.get("/calc", async (req, res, next) => {
   }
 });
 app.use(handleError);
+
 // Here we are done with endpoint
 
 // We start our validators and responses
