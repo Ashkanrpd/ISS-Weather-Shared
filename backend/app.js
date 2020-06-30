@@ -6,16 +6,15 @@ const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
 const customError = require("../utils/error.js");
+
 const port = process.env.PORT;
 
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
 
 function handleError(err, req, res, next) {
-  console.log("next", next);
   if (err instanceof customError) {
     res.status(err.code).send(JSON.stringify(err));
-    return next(err);
   }
   res.status(500).send(JSON.stringify(err));
 }
@@ -54,9 +53,10 @@ app.get("/calc", async (req, res, next) => {
       issWeather.current.temperature - userWeather.current.temperature;
     validateTempDif({ tempDif, res, distance, issWeather });
   } catch (err) {
-    handleError(err, req, res, next);
+    next(err);
   }
 });
+app.use(handleError);
 // Here we are done with endpoint
 
 // We start our validators and responses
@@ -152,6 +152,7 @@ const validateTempDif = (params) => {
     );
   }
 };
+
 // Here we are done with our validators and responses
 
 let listener;
