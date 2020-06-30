@@ -11,17 +11,17 @@ const port = process.env.PORT;
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
 
-function handleError(err, req, res) {
+function handleError(err, req, res, next) {
+  console.log("next", next);
   if (err instanceof customError) {
-    console.log("js", err);
     res.status(err.code).send(JSON.stringify(err));
-    return;
+    return next(err);
   }
   res.status(500).send(JSON.stringify(err));
 }
 
 // Here we start our endpoints
-app.get("/calc", async (req, res) => {
+app.get("/calc", async (req, res, next) => {
   try {
     let userLatitude = req.query.latitude;
     let userLongitude = req.query.longitude;
@@ -54,7 +54,7 @@ app.get("/calc", async (req, res) => {
       issWeather.current.temperature - userWeather.current.temperature;
     validateTempDif({ tempDif, res, distance, issWeather });
   } catch (err) {
-    handleError(err, req, res);
+    handleError(err, req, res, next);
   }
 });
 // Here we are done with endpoint
