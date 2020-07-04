@@ -1,0 +1,9 @@
+name: Workflow to run my tests
+on: push
+jobs:
+  running test:
+    runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v1.0.0
+        - run: npm install
+        - run: npm test
