@@ -1,7 +1,7 @@
 name: Workflow to run my tests
 on: push
 jobs:
-  running test:
+  runTest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1.0.0
