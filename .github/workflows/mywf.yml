@@ -7,3 +7,8 @@ jobs:
       - uses: actions/checkout@v1.0.0
       - run: npm install
       - run: npm test
+        env: PORT = 4000
+          WEATHER_STACK_ACCESS_KEY = somekey
+          WEATHER_STACK_URL = http://api.weatherstack.com
+          OPEN_NOTIFY_URL = http://api.open-notify.org
+          OPEN_NOTIFY_URL_JSON = http://api.open-notify.org/iss-now.json
