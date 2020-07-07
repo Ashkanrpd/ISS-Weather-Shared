@@ -9,7 +9,7 @@ const port = process.env.PORT;
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
 
-function handleError(err, req, res, next) {
+function handleError(err, req, res) {
   if (err instanceof customError) {
     return res.status(err.code).send(JSON.stringify(err));
   }
@@ -24,7 +24,7 @@ app.get("/calc", async (req, res, next) => {
     validateParameters({ userLatitude, userLongitude, res });
     // Finding the ISS coordinates
     const issBody = await issCollector();
-    validateIssBody({ issBody, res });
+    validateIssBody({ issBody });
     const issLatitude = issBody.iss_position.latitude;
     const issLongitude = issBody.iss_position.longitude;
     // Finding the distance between the user and nearest place to ISS on earth
@@ -42,7 +42,7 @@ app.get("/calc", async (req, res, next) => {
       issLatitude,
       issLongitude
     );
-    validateWeatherStack({ response, res });
+    validateWeatherStack({ response });
     const issWeather = response.wsForIssBody;
     const userWeather = response.wsForUserBody;
     // Calculating the temperature difference between the international space station and user
@@ -59,7 +59,7 @@ app.use(handleError);
 
 // We start our validators and responses
 const validateParameters = (params) => {
-  const { userLatitude, userLongitude, res } = params;
+  const { userLatitude, userLongitude } = params;
   if (!userLatitude || !userLongitude) {
     throw new customError(
       JSON.stringify({
@@ -89,7 +89,7 @@ const validateParameters = (params) => {
 };
 
 const validateIssBody = (params) => {
-  const { issBody, res } = params;
+  const { issBody } = params;
   if (issBody.msg !== "success") {
     throw new customError(
       JSON.stringify({
@@ -104,7 +104,7 @@ const validateIssBody = (params) => {
 };
 
 const validateWeatherStack = (params) => {
-  const { response, res } = params;
+  const { response } = params;
   if (
     "success" in response.wsForIssBody ||
     "success" in response.wsForUserBody ||
