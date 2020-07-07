@@ -5,7 +5,9 @@ const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
 const customError = require("../utils/error.js");
+
 const port = process.env.PORT;
+
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
 
@@ -21,10 +23,10 @@ app.get("/calc", async (req, res, next) => {
   try {
     let userLatitude = req.query.latitude;
     let userLongitude = req.query.longitude;
-    validateParameters({ userLatitude, userLongitude, res });
+    validateParameters({ userLatitude, userLongitude });
     // Finding the ISS coordinates
     const issBody = await issCollector();
-    validateIssBody({ issBody, res });
+    validateIssBody({ issBody });
     const issLatitude = issBody.iss_position.latitude;
     const issLongitude = issBody.iss_position.longitude;
     // Finding the distance between the user and nearest place to ISS on earth
@@ -42,7 +44,7 @@ app.get("/calc", async (req, res, next) => {
       issLatitude,
       issLongitude
     );
-    validateWeatherStack({ response, res });
+    validateWeatherStack({ response });
     const issWeather = response.wsForIssBody;
     const userWeather = response.wsForUserBody;
     // Calculating the temperature difference between the international space station and user
@@ -59,7 +61,7 @@ app.use(handleError);
 
 // We start our validators and responses
 const validateParameters = (params) => {
-  const { userLatitude, userLongitude, res } = params;
+  const { userLatitude, userLongitude } = params;
   if (!userLatitude || !userLongitude) {
     throw new customError(
       JSON.stringify({
@@ -85,11 +87,10 @@ const validateParameters = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateIssBody = (params) => {
-  const { issBody, res } = params;
+  const { issBody } = params;
   if (issBody.msg !== "success") {
     throw new customError(
       JSON.stringify({
@@ -100,11 +101,10 @@ const validateIssBody = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateWeatherStack = (params) => {
-  const { response, res } = params;
+  const { response } = params;
   if (
     "success" in response.wsForIssBody ||
     "success" in response.wsForUserBody ||
@@ -122,7 +122,6 @@ const validateWeatherStack = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateTempDif = (params) => {
@@ -152,7 +151,6 @@ const validateTempDif = (params) => {
       })
     );
   }
-  return;
 };
 
 // Here we are done with our validators and responses

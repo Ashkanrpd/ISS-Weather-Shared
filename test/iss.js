@@ -3,7 +3,6 @@ const nock = require("nock");
 const request = require("supertest");
 const chai = require("chai");
 const expect = chai.expect;
-const fetch = require("node-fetch");
 const app = require("../backend/app.js").app;
 const start = require("../backend/app.js").start;
 const close = require("../backend/app.js").close;
