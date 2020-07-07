@@ -5,11 +5,13 @@ const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
 const customError = require("../utils/error.js");
+
 const port = process.env.PORT;
+
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
 
-function handleError(err, req, res) {
+function handleError(err, req, res, next) {
   if (err instanceof customError) {
     return res.status(err.code).send(JSON.stringify(err));
   }
@@ -21,7 +23,7 @@ app.get("/calc", async (req, res, next) => {
   try {
     let userLatitude = req.query.latitude;
     let userLongitude = req.query.longitude;
-    validateParameters({ userLatitude, userLongitude, res });
+    validateParameters({ userLatitude, userLongitude });
     // Finding the ISS coordinates
     const issBody = await issCollector();
     validateIssBody({ issBody });
@@ -85,7 +87,6 @@ const validateParameters = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateIssBody = (params) => {
@@ -100,7 +101,6 @@ const validateIssBody = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateWeatherStack = (params) => {
@@ -122,7 +122,6 @@ const validateWeatherStack = (params) => {
       })
     );
   }
-  return;
 };
 
 const validateTempDif = (params) => {
@@ -152,7 +151,6 @@ const validateTempDif = (params) => {
       })
     );
   }
-  return;
 };
 
 // Here we are done with our validators and responses
