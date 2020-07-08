@@ -1,15 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const cors = require("cors");
 const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
 const customError = require("../utils/error.js");
 
-const port = process.env.PORT;
-
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
+app.use(cors());
 
 function handleError(err, req, res, next) {
   if (err instanceof customError) {
@@ -91,7 +91,7 @@ const validateParameters = (params) => {
 
 const validateIssBody = (params) => {
   const { issBody } = params;
-  if (issBody.msg !== "success") {
+  if (issBody.msg !== "success" && issBody.message !== "success") {
     throw new customError(
       JSON.stringify({
         name: "NotFoundError",
@@ -156,7 +156,7 @@ const validateTempDif = (params) => {
 // Here we are done with our validators and responses
 
 let listener;
-const start = () => {
+const start = (port) => {
   listener = app.listen(port, "0.0.0.0", () => {
     console.log(`Server Running on port ${port}`);
   });

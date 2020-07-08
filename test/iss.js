@@ -9,7 +9,7 @@ const close = require("../backend/app.js").close;
 
 describe("ISS", () => {
   beforeEach(async () => {
-    await start();
+    await start(process.env.PORT);
   });
   afterEach(() => close());
 
