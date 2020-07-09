@@ -1,15 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const cors = require("cors");
 const issCollector = require("./functions/issDataCollector.js");
 const distanceCalc = require("./functions/distanceCalc.js");
 const weatherStack = require("./functions/weatherStack.js");
 const customError = require("../utils/error.js");
 
-const port = process.env.PORT;
-
 app.use("/", express.static("build")); // Needed for the HTML and JS files
 app.use("/", express.static("./public")); // Needed for local assets
+app.use(cors());
 
 function handleError(err, req, res, next) {
   if (err instanceof customError) {
@@ -37,6 +37,7 @@ app.get("/calc", async (req, res, next) => {
       issLongitude,
       "K"
     );
+    console.log("dis", distance);
     // Finding the weather detials for the region below the ISS and user location
     let response = await weatherStack(
       userLatitude,
@@ -44,6 +45,7 @@ app.get("/calc", async (req, res, next) => {
       issLatitude,
       issLongitude
     );
+    console.log("res", response);
     validateWeatherStack({ response });
     const issWeather = response.wsForIssBody;
     const userWeather = response.wsForUserBody;
@@ -91,7 +93,7 @@ const validateParameters = (params) => {
 
 const validateIssBody = (params) => {
   const { issBody } = params;
-  if (issBody.msg !== "success") {
+  if (issBody.msg !== "success" && issBody.message !== "success") {
     throw new customError(
       JSON.stringify({
         name: "NotFoundError",
@@ -105,13 +107,14 @@ const validateIssBody = (params) => {
 
 const validateWeatherStack = (params) => {
   const { response } = params;
+
   if (
     "success" in response.wsForIssBody ||
     "success" in response.wsForUserBody ||
     isNaN(response.wsForIssBody.current.temperature) ||
-    isNaN(response.wsForUserBody.current.temperature) ||
-    !response.wsForIssBody.location.name ||
-    !response.wsForUserBody.location.name
+    isNaN(response.wsForUserBody.current.temperature) // ||
+    // !response.wsForIssBody.location.name ||
+    // !response.wsForUserBody.location.name
   ) {
     throw new customError(
       JSON.stringify({
@@ -156,7 +159,7 @@ const validateTempDif = (params) => {
 // Here we are done with our validators and responses
 
 let listener;
-const start = () => {
+const start = (port) => {
   listener = app.listen(port, "0.0.0.0", () => {
     console.log(`Server Running on port ${port}`);
   });

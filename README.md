@@ -1,6 +1,6 @@
-# ISS weather
+# ISS-Weather (server)
 
-## An in progress project to learn how to work with Test-driven development (TDD) process.
+## A project to learn how to work with Test-driven development (TDD) process.
 
 ### Features:
 
@@ -12,10 +12,14 @@
 
 ### Highlights:
 
-- JavaScript, React.JS
+- JavaScript
 - NodeJS and Express
 - External APIs
 - SuperTest, Mocha and Chai, Nock
 - Test Automation
 - Custom Handle Error Function
 - ESlint
+
+![image info](./public/home.png)  
+![image info](./public/result.png)  
+![image info](./public/error.png)
