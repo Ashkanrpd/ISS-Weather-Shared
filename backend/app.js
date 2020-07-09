@@ -37,6 +37,7 @@ app.get("/calc", async (req, res, next) => {
       issLongitude,
       "K"
     );
+    console.log("dis", distance);
     // Finding the weather detials for the region below the ISS and user location
     let response = await weatherStack(
       userLatitude,
@@ -44,6 +45,7 @@ app.get("/calc", async (req, res, next) => {
       issLatitude,
       issLongitude
     );
+    console.log("res", response);
     validateWeatherStack({ response });
     const issWeather = response.wsForIssBody;
     const userWeather = response.wsForUserBody;
@@ -105,13 +107,14 @@ const validateIssBody = (params) => {
 
 const validateWeatherStack = (params) => {
   const { response } = params;
+
   if (
     "success" in response.wsForIssBody ||
     "success" in response.wsForUserBody ||
     isNaN(response.wsForIssBody.current.temperature) ||
-    isNaN(response.wsForUserBody.current.temperature) ||
-    !response.wsForIssBody.location.name ||
-    !response.wsForUserBody.location.name
+    isNaN(response.wsForUserBody.current.temperature) // ||
+    // !response.wsForIssBody.location.name ||
+    // !response.wsForUserBody.location.name
   ) {
     throw new customError(
       JSON.stringify({
