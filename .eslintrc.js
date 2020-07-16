@@ -6,25 +6,14 @@ module.exports = {
     node: true,
     mocha: true,
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    // "plugin:react-hooks/recommended",
-    // "plugin:react-redux/recommended",
-    "plugin:node/recommended",
-  ],
+  extends: ["eslint:recommended", "plugin:node/recommended"],
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
     ecmaVersion: 11,
   },
-  plugins: ["react"],
-  settings: {
-    react: {
-      version: "detect",
-    },
-  },
+
   rules: {
     "node/no-extraneous-require": [
       "error",
