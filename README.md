@@ -2,6 +2,10 @@
 
 ## A project to learn how to work with Test-driven development (TDD) process.
 
+### URL:
+
+https://warm-beyond-99964.herokuapp.com/
+
 ### Features:
 
 - Find the coordinates of the International Space Station live
@@ -19,6 +23,8 @@
 - Test Automation
 - Custom Handle Error Function
 - ESlint
+- Docker
+- Heroku
 
 ![image info](./public/home.png)  
 ![image info](./public/result.png)  

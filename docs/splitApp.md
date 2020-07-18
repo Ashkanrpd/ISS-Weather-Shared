@@ -92,8 +92,7 @@ const weatherStack = function (userLatitude,userLongitude,issBody.iss_position.l
 
    let wsForUserBody = await wsForUserResponse.text();
    wsForUserBody = JSON.parse(wsForUserBody);
-   console.log("wsForUserBody", wsForUserBody);
-   console.log("wsForIssBody", wsForIssBody);
+
 
    if (
      "success" in wsForIssBody ||

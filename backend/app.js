@@ -37,7 +37,7 @@ app.get("/calc", async (req, res, next) => {
       issLongitude,
       "K"
     );
-    console.log("dis", distance);
+
     // Finding the weather detials for the region below the ISS and user location
     let response = await weatherStack(
       userLatitude,
@@ -45,7 +45,7 @@ app.get("/calc", async (req, res, next) => {
       issLatitude,
       issLongitude
     );
-    console.log("res", response);
+
     validateWeatherStack({ response });
     const issWeather = response.wsForIssBody;
     const userWeather = response.wsForUserBody;
@@ -155,6 +155,9 @@ const validateTempDif = (params) => {
     );
   }
 };
+app.get("/", function (req, res) {
+  res.redirect("/calc");
+});
 
 // Here we are done with our validators and responses
 
